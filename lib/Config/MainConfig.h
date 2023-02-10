@@ -13,9 +13,14 @@
 #define DEBUG_SERIAL_SPEED 115200
 
 /*
+ * Use ENC28J60 chip based Ethernet module
+ */
+#define USE_ENC28J60_ETHERNET_MODULE
+
+/*
  * Enable multiple board mode (Master and Slave(s) board with I2C communication)
  */
-#define ACTIVE_MULTI_ARDUINO_BOARD_MODE
+//#define ACTIVE_MULTI_ARDUINO_BOARD_MODE
 
 /*
  * Max input and output controls the application can manage.
