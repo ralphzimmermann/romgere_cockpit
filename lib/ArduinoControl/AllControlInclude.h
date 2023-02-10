@@ -7,12 +7,13 @@
 // File allowing inclusion for all existing input/output controls types //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "ArduinoIncrementalThreePosToggleSwitchControl.h"
-#include "ArduinoLEDControl.h"
-#include "ArduinoPotentiometerControl.h"
 #include "ArduinoPushButtonControl.h"
+#include "ArduinoToggleSwitchControl.h"
+#include "ArduinoThreePosToggleSwitchControl.h"
+#include "ArduinoIncrementalThreePosToggleSwitchControl.h"
 #include "ArduinoRotaryEncoderControl.h"
 #include "ArduinoRotarySwitchControl.h"
+#include "ArduinoLEDControl.h"
 #include "ArduinoServoControl.h"
-#include "ArduinoThreePosToggleSwitchControl.h"
-#include "ArduinoToggleSwitchControl.h"
+#include "ArduinoPotentiometerControl.h"
+#include "ArduinoRotaryEncoderInterruptControl.h"
