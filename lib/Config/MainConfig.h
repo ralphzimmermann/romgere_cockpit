@@ -20,28 +20,28 @@
 /*
  * Enable multiple board mode (Master and Slave(s) board with I2C communication)
  */
-//#define ACTIVE_MULTI_ARDUINO_BOARD_MODE
+// #define ACTIVE_MULTI_ARDUINO_BOARD_MODE
 
 /*
  * Max input and output controls the application can manage.
  * Decrease = Memory saving.
  */
-#define MAX_INPUT_CONTROL_IN_APPLICATION 128
-#define MAX_OUTPUT_CONTROL_IN_APPLICATION 128
+#define MAX_INPUT_CONTROL_IN_APPLICATION 32  // 128
+#define MAX_OUTPUT_CONTROL_IN_APPLICATION 32 // 128
 
 /*
  * Max number of command who can be bind to one control.
  * Min : 3 (For 3 position toggle switch)
  * Max : 10 (For rotary switch)
  */
-#define MAX_COMMAND_FOR_ONE_CONTROLE 10
+#define MAX_COMMAND_FOR_ONE_CONTROLE 5
 
 /*
  * Max input data group received from X-Plane the application can manage
  * Adapt for your need.
  * Decrease = Memory saving.
  */
-#define MAX_INPUT_DATA_FROM_XPLANE 32
+#define MAX_INPUT_DATA_FROM_XPLANE 16 // 32
 
 /*
  * Defined the frequency of read data action (from X-Plane) on "loop" method

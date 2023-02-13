@@ -11,7 +11,7 @@
 #include <EthernetENC.h>
 #else
 #include <Ethernet.h>
-
+#endif
 #include "../Config/MainConfig.h"
 #include "BaseCommunicationInterface.h"
 
