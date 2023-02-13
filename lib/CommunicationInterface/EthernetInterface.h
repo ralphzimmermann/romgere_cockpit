@@ -7,11 +7,8 @@
 #define XPLANENETWORKINGCLASS_H_INCLUDED
 
 #include <Arduino.h>
-#ifndef USE_ENC28J60_ETHERNET_MODULE
-#include <EthernetENC.h>
-#else
 #include <Ethernet.h>
-#endif
+
 #include "../Config/MainConfig.h"
 #include "BaseCommunicationInterface.h"
 

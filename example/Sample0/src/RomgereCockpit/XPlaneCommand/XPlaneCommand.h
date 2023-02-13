@@ -117,8 +117,8 @@ class LibrarySpecialCommand : public XPlaneOutputCommand {
 
 public:
   typedef enum {
-    SendAll = 0,  // Send all command of all (toggle switch and rotary switch)
-                  // input control even if control was not modified
+    SendAll = 0, // Send all command of all (toggle switch and rotary switch)
+                 // input control even if control was not modified
     ResetArduino, // Reset Arduino board
     AllLedOn,     // Turn on all LED output controls (Example : testing panel)
     AllLedOff,    // Turn off all LED output controls

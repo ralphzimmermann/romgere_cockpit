@@ -12,7 +12,6 @@
 #include "ArduinoPotentiometerControl.h"
 #include "ArduinoPushButtonControl.h"
 #include "ArduinoRotaryEncoderControl.h"
-#include "ArduinoRotaryEncoderInterruptControl.h"
 #include "ArduinoRotarySwitchControl.h"
 #include "ArduinoServoControl.h"
 #include "ArduinoThreePosToggleSwitchControl.h"

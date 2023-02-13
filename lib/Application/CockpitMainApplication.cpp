@@ -194,7 +194,7 @@ void CockpitMainApplication::Loop() {
 #if NUMBER_LOOP_SKIP_FOR_READ_DATA_FROM_XPLANE > 1
   if (LoopNumber % NUMBER_LOOP_SKIP_FOR_READ_DATA_FROM_XPLANE == 0) {
 #endif
-/*
+
     // Read data from X-plane
     uint8_t nbDataRead = CommunicationInterface->ReadAllInput();
 
@@ -204,7 +204,6 @@ void CockpitMainApplication::Loop() {
         this->updateControlWithCommand(OutputControlList[i]);
       }
     }
-*/
 #if NUMBER_LOOP_SKIP_FOR_READ_DATA_FROM_XPLANE > 1
   }
 #endif
