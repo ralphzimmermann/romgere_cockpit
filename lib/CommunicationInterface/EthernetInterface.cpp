@@ -5,11 +5,14 @@
 
 #include "EthernetInterface.h"
 
+// #define DEBUG_ETHERNET
+
+#define XPLANE_DREF_UDP_PACKET_SIZE 509
+
 EthernetInterface::EthernetInterface(unsigned int readPort,
                                      unsigned int writePort,
                                      IPAddress arduinoIP, uint8_t arduinoMAC[6],
                                      IPAddress xplaneIP, bool waitForXPlane) {
-
   this->IsClassInit = false;
 
   for (int i = 0; i < MAX_INPUT_DATA_FROM_XPLANE; i++) {
@@ -46,6 +49,23 @@ EthernetInterface::EthernetInterface(unsigned int readPort,
     Ethernet.begin(arduinoMAC, arduinoIP);
   }
 
+#ifdef DEBUG_ETHERNET
+  if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+    Serial.println("Ethernet shield was not found.  Sorry, can't run without "
+                   "hardware. :(");
+    while (true) {
+      delay(1); // do nothing, no point running without Ethernet hardware
+    }
+  }
+#endif
+
+#ifdef DEBUG_ETHERNET
+  while (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+    delay(100);
+  }
+#endif
+
   // Start listening on UDP
   res = this->Udp.begin(this->XplaneReadPort);
 
@@ -66,6 +86,8 @@ EthernetInterface::EthernetInterface(unsigned int readPort,
         delay(250);
     }
   }
+
+  Serial.println("EthernetInterface init complete");
 }
 
 EthernetInterface::~EthernetInterface() {}
@@ -74,6 +96,10 @@ EthernetInterface::~EthernetInterface() {}
 // from x-Plane ()
 uint8_t EthernetInterface::ReadAllInput() {
 
+#ifdef DEBUG_ETHERNET
+  Serial.println("ReadAllInput");
+#endif
+
   // Pas initialisée
   if (!this->IsClassInit)
     return 0;
@@ -81,6 +107,21 @@ uint8_t EthernetInterface::ReadAllInput() {
   int readSize = this->Udp.parsePacket();
   if (readSize) {
 
+#ifdef DEBUG_ETHERNET
+    Serial.print("Received UDP packet of size ");
+    Serial.println(readSize);
+
+    Serial.print("From ");
+    IPAddress remote = this->Udp.remoteIP();
+    for (int i = 0; i < 4; i++) {
+      Serial.print(remote[i], DEC);
+      if (i < 3) {
+        Serial.print(".");
+      }
+    }
+    Serial.print(", port ");
+    Serial.println(this->Udp.remotePort());
+#endif
     // First reception : keep X-Plane remote address
     if (!this->IsXPlaneAdressInit) {
       this->XPlaneAdress = this->Udp.remoteIP();
@@ -90,6 +131,10 @@ uint8_t EthernetInterface::ReadAllInput() {
     byte buffer[readSize];
     this->Udp.read(buffer, readSize);
 
+#ifdef DEBUG_ETHERNET
+    Serial.print("Udp.read: ");
+    Serial.println(buffer[0]);
+#endif
     // Dats from X-Plane start with "DATA>"
     // ref : http://svglobe.com/arduino/udpdata.html
     if (buffer[0] == 'D' && buffer[1] == 'A' && buffer[2] == 'T' &&
@@ -108,9 +153,18 @@ uint8_t EthernetInterface::ReadAllInput() {
       // Parse received data (By 36 Bytes packet, length of X-Plane data )
       for (int i = 5; i < readSize; i += 36) {
 
+        Serial.println("Here1");
         XPGroupDatas *p = new XPGroupDatas();
+        Serial.println("Here2");
+
         // First byte : Data's group
         p->group = buffer[i];
+
+#ifdef DEBUG_ETHERNET
+        Serial.print("Ethernet debug : Receive data for group ");
+        Serial.print(p->group);
+        Serial.print(" with value [");
+#endif
 
         // Datas : table of 8 float value (8 x 4 bytes)
         for (int j = 0; j < 8; j++) {
@@ -122,8 +176,15 @@ uint8_t EthernetInterface::ReadAllInput() {
           }
           // Convert 4 byte array to float with XPNetworkData union
           p->data[j] = tmpData.floatVal;
+#ifdef DEBUG_ETHERNET
+          Serial.print(p->data[j]);
+          Serial.print(",");
+#endif
         }
 
+#ifdef DEBUG_ETHERNET
+        Serial.println("].");
+#endif
         this->LastXPlaneDatas[index] = p;
 
         index++;
@@ -132,6 +193,15 @@ uint8_t EthernetInterface::ReadAllInput() {
       // Return the number of data group read (if 0 no output will be modified)
       return index;
     }
+
+#ifdef DEBUG_ETHERNET
+    Serial.println(
+        "Ethernet debug : Data received not start with \"DATA>\" : ");
+    Serial.println("---------------START------------------");
+    for (int i = 0; i < readSize; i++)
+      Serial.print((char)buffer[i]);
+    Serial.println("----------------END-------------------");
+#endif
   }
 
   return 0;
@@ -162,36 +232,51 @@ void EthernetInterface::SendCommand(const char *cmd) {
   this->Udp.endPacket();
 }
 
-// Send DREF command to X-Plane
 void EthernetInterface::SendDrefCommand(const char *dref, float value) {
 
   if (!this->IsClassInit)
     return;
 
-  // Convert DREF value
+  char DataOut[XPLANE_DREF_UDP_PACKET_SIZE + 1];
+
   XPNetworkData tmpData;
   tmpData.floatVal = value;
 
-  // build DREF name
-  char DataOut[497];
-  int i = 0;
-  while (dref[i] != 0 && i < 496) {
-    DataOut[i] = dref[i];
-    i++;
-  }
-  for (; i < 496; i++) {
-    DataOut[i] = char(32);
-  }
-  DataOut[i] = 0;
+  strcpy(DataOut, "DREF");
+  DataOut[4] = 0; // zero terminate label
 
-  // Send datas
-  this->Udp.beginPacket(this->XPlaneAdress, this->XPlaneWritePort);
-  this->Udp.write("DREF0");
-  for (int i = 0; i < 4; i++) {
-    this->Udp.write(tmpData.byteVal[i]);
+  for (int copyCounter = 0; copyCounter < 4;
+       copyCounter++) { // 4 bytes of float value
+    DataOut[5 + copyCounter] = tmpData.byteVal[copyCounter];
   }
-  this->Udp.write("sim/");
-  this->Udp.write(DataOut);
+
+  strcpy(&DataOut[9], "sim/");
+  strcpy(&DataOut[13], dref);
+
+  int drefTerminationPoint = strlen(dref) + 13;
+  DataOut[drefTerminationPoint] = 0; // terminate dref_path value with 0
+  memset(&DataOut[drefTerminationPoint + 1], char(32),
+         XPLANE_DREF_UDP_PACKET_SIZE - drefTerminationPoint);
+
+  DataOut[XPLANE_DREF_UDP_PACKET_SIZE - 1] = 0;
+
+#ifdef DEBUG_ETHERNET
+  Serial.print("Send DREF command: ");
+  for (int k = 0; k < XPLANE_DREF_UDP_PACKET_SIZE; k++) {
+    if (isPrintable(DataOut[k])) {
+      if (DataOut[k] != char(32)) // no need to print these
+        Serial.print(DataOut[k]);
+    } else {
+      Serial.print("\\0x");
+      Serial.print(DataOut[k], HEX);
+    }
+  }
+  Serial.print(" value:");
+  Serial.println(value);
+#endif
+
+  this->Udp.beginPacket(this->XPlaneAdress, this->XPlaneWritePort);
+  this->Udp.write(DataOut, XPLANE_DREF_UDP_PACKET_SIZE);
   this->Udp.endPacket();
 }
 

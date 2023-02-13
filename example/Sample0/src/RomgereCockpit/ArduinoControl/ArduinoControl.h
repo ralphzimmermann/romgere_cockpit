@@ -71,8 +71,8 @@ public:
   // Ici on va définir les méthode permettant de lire/ecrire les entrée Arduino
   // Permet de s'affranchir dans les classes de controles dérivée de la façon
   // dont ces actions sont faites (Par exemple pour une carte Esclave en I2C,
-  //cette méthode ne va pas appelée directement les fonction Arduino classique
-  //analogRead, analogWrite...)
+  // cette méthode ne va pas appelée directement les fonction Arduino classique
+  // analogRead, analogWrite...)
 
   // These methods are used to read/write on PIN with slave/master board
   // abstraction Direct call to arduino read/write for input/output on master
